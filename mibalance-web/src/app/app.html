@@ -1,0 +1,63 @@
+<main class="pagina">
+  <section class="tarjeta">
+    <div class="marca">MB</div>
+    <p class="etiqueta">TUS FINANZAS, EN ORDEN</p>
+    <h1>MiBalance</h1>
+
+    @if (comprobando()) {
+      <p role="status">Comprobando sesión...</p>
+    } @else {
+      @if (usuario(); as actual) {
+        <h2>¡Hola, {{ actual.nombre }}!</h2>
+        <p>Tu sesión está activa.</p>
+        <p class="correo">{{ actual.correo }}</p>
+
+        <button
+          type="button"
+          [disabled]="cargando()"
+          (click)="cerrarSesion()">
+          {{ cargando() ? 'Cerrando sesión...' : 'Cerrar sesión' }}
+        </button>
+      } @else {
+        <p>Inicia sesión para administrar tus ingresos y gastos.</p>
+
+        <form #loginForm="ngForm" (ngSubmit)="iniciarSesion()">
+          <label for="correo">Correo electrónico</label>
+          <input
+            id="correo"
+            name="correo"
+            type="email"
+            autocomplete="username"
+            placeholder="tu@correo.com"
+            [(ngModel)]="correo"
+            required
+            email
+            maxlength="150"
+          />
+
+          <label for="password">Contraseña</label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            autocomplete="current-password"
+            placeholder="Tu contraseña"
+            [(ngModel)]="password"
+            required
+            maxlength="128"
+          />
+
+          <button
+            type="submit"
+            [disabled]="loginForm.invalid || cargando()">
+            {{ cargando() ? 'Ingresando...' : 'Iniciar sesión' }}
+          </button>
+        </form>
+      }
+    }
+
+    @if (error()) {
+      <p class="error" role="alert">{{ error() }}</p>
+    }
+  </section>
+</main>
