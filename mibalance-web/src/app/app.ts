@@ -1,82 +1,56 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { HttpErrorResponse } from '@angular/common/http';
+import { Component, inject, signal } from '@angular/core';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { Api, mensajeError } from './api';
 import { finalize } from 'rxjs';
-import { AuthService, UsuarioSesion } from './services/auth.service';
-
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [FormsModule],
-  templateUrl: './app.html',
-  styleUrl: './app.css'
+  imports: [RouterLink, RouterLinkActive, RouterOutlet],
+  template: `
+    <a class="saltar" href="#contenido">Ir al contenido</a>
+    @if (api.usuario(); as usuario) {
+      <header class="barra">
+        <a class="marca" routerLink="/dashboard">MB <span>MiBalance</span></a>
+        <nav aria-label="Menú principal">
+          <a routerLink="/dashboard" routerLinkActive="activo">Resumen</a>
+          <a routerLink="/transacciones" routerLinkActive="activo">Movimientos</a>
+          <a routerLink="/categorias" routerLinkActive="activo">Categorías</a>
+        </nav>
+        <div class="acciones">
+          <span>{{ usuario.nombre }}</span>
+          <button class="secundario" (click)="salir()" [disabled]="ocupado()">Cerrar sesión</button>
+        </div>
+      </header>
+    }
+    <main id="contenido" class="contenedor">
+      @if (error()) {
+        <p class="error" role="alert">{{ error() }}</p>
+      }
+      <router-outlet />
+    </main>
+    <footer>MiBalance · Tus finanzas, en orden</footer>
+  `,
 })
-export class App implements OnInit {
-  private auth = inject(AuthService);
-
-  correo = '';
-  password = '';
-
-  usuario = signal<UsuarioSesion | null>(null);
-  cargando = signal(false);
-  comprobando = signal(true);
+export class App {
+  api = inject(Api);
+  private router = inject(Router);
+  ocupado = signal(false);
   error = signal('');
-
-  ngOnInit() {
-    this.auth.obtenerSesion()
-      .pipe(finalize(() => this.comprobando.set(false)))
-      .subscribe({
-        next: usuario => this.usuario.set(usuario),
-        error: (error: HttpErrorResponse) => {
-          if (error.status !== 401) {
-            this.error.set(
-              'No pudimos comprobar tu sesión. Revisa que la API esté ejecutándose.'
-            );
-          }
-        }
-      });
-  }
-
-  iniciarSesion() {
-    if (this.cargando()) return;
-
+  salir() {
+    if (this.ocupado()) return;
+    this.ocupado.set(true);
     this.error.set('');
-    this.cargando.set(true);
-
-    this.auth.login(this.correo.trim(), this.password)
-      .pipe(finalize(() => this.cargando.set(false)))
+    this.api
+      .logout()
+      .pipe(finalize(() => this.ocupado.set(false)))
       .subscribe({
-        next: respuesta => {
-          this.usuario.set(respuesta.usuario);
-          this.password = '';
+        next: () => this.router.navigateByUrl('/login'),
+        error: (e) => {
+          if (e.status === 401) {
+            this.api.usuario.set(null);
+            void this.router.navigateByUrl('/login');
+          } else this.error.set(mensajeError(e));
         },
-        error: (error: HttpErrorResponse) => {
-          this.error.set(
-            error.status === 401
-              ? 'Correo o contraseña incorrectos.'
-              : 'No pudimos iniciar sesión. Revisa la conexión con la API.'
-          );
-        }
-      });
-  }
-
-  cerrarSesion() {
-    if (this.cargando()) return;
-
-    this.error.set('');
-    this.cargando.set(true);
-
-    this.auth.logout()
-      .pipe(finalize(() => this.cargando.set(false)))
-      .subscribe({
-        next: () => this.usuario.set(null),
-        error: (error: HttpErrorResponse) => {
-          if (error.status === 401) {
-            this.usuario.set(null);
-          } else {
-            this.error.set('No pudimos cerrar la sesión. Intenta otra vez.');
-          }
-        }
       });
   }
 }
