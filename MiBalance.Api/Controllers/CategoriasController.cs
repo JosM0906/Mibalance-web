@@ -133,7 +133,7 @@ public class CategoriasController : ControllerBase
         {
             return Conflict(new
             {
-                mensaje = "No puedes eliminar una categoría que tiene transacciones asociadas."
+                mensaje = "No puedes eliminar una categoría que tiene transacciones o presupuestos asociados."
             });
         }
 

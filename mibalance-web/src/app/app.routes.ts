@@ -3,6 +3,7 @@ import { CanActivateFn, Router, Routes } from '@angular/router';
 import { catchError, map, of } from 'rxjs';
 import { Api } from './api';
 import { Login, Dashboard, Listado, Formulario, Detalle, Categorias } from './pantallas';
+import { Presupuestos } from './presupuestos';
 const sesion: CanActivateFn = () => {
   const api = inject(Api);
   const router = inject(Router);
@@ -48,5 +49,11 @@ export const routes: Routes = [
     title: 'Categorías | MiBalance',
   },
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+  {
+    path: 'presupuestos',
+    component: Presupuestos,
+    canActivate: [sesion],
+    title: 'Presupuestos | MiBalance',
+  },
   { path: '**', redirectTo: 'dashboard' },
 ];

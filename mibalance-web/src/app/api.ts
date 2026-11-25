@@ -21,6 +21,15 @@ export interface Movimiento {
   descripcion: string | null;
 }
 export type DatosMovimiento = Omit<Movimiento, 'idTransaccion' | 'idUsuario'>;
+export interface Presupuesto {
+  idPresupuesto: number;
+  idUsuario: number;
+  idCategoria: number;
+  nombre: string;
+  montoLimite: number;
+  mes: string;
+}
+export type DatosPresupuesto = Omit<Presupuesto, 'idPresupuesto' | 'idUsuario'>;
 export function mensajeError(e: HttpErrorResponse): string {
   if (e.status === 401) return 'Tu sesión venció. Vuelve a iniciar sesión.';
   if (e.error?.mensaje) return e.error.mensaje;
@@ -75,5 +84,19 @@ export class Api {
   }
   eliminarCategoria(id: number) {
     return this.http.delete(`/api/categorias/${id}`, this.opciones);
+  }
+
+  presupuestos() {
+    return this.http.get<Presupuesto[]>('/api/presupuestos', this.opciones);
+  }
+
+  guardarPresupuesto(id: number | null, datos: DatosPresupuesto) {
+    return id === null
+      ? this.http.post<Presupuesto>('/api/presupuestos', datos, this.opciones)
+      : this.http.put<Presupuesto>(`/api/presupuestos/${id}`, datos, this.opciones);
+  }
+
+  eliminarPresupuesto(id: number) {
+    return this.http.delete(`/api/presupuestos/${id}`, this.opciones);
   }
 }

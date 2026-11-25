@@ -95,3 +95,31 @@ Incluir este código fuente, script SQL y documentación. No incluir node_module
 El proxy es para desarrollo. Una publicación en hosting requiere servir `/api` desde el backend y configurar HTTPS y las rutas de Angular en el servidor elegido.
 
 El backend también compiló con 0 errores. NuGet emitió advertencias porque el entorno no pudo consultar su servicio de vulnerabilidades. Las pruebas HTTP locales no pudieron ejecutarse porque el entorno denegó el uso de sockets.
+
+
+## Presupuestos por categoría
+
+La pantalla `/presupuestos` administra un límite mensual por categoría para el usuario autenticado.
+Tiene listado en tabla, creación, edición y eliminación con confirmación. El selector de categorías
+consulta el catálogo existente mediante `GET /api/categorias`.
+
+Para actualizar una base MiBalance existente, ejecuta `database/AgregarPresupuestos.sql` en SQL Server
+Management Studio antes de abrir la pantalla. Para una instalación nueva, `database/MiBalance.sql`
+ya incluye esta tabla. Reinicia la API después de compilar los cambios.
+
+La tabla Presupuestos tiene llave primaria IdPresupuesto y llaves foráneas a Categorias y Usuarios.
+Solo se admite un presupuesto por usuario, categoría y mes. Nombre obligatorio de hasta 100 caracteres,
+límite positivo con dos decimales y mes obligatorio. Cada usuario solo puede acceder a sus presupuestos.
+Las categorías con presupuestos asociados no se pueden eliminar.
+
+La organización sigue la estructura existente de MiBalance. El modelo y DTO están en Models y Dtos,
+el controlador en Controllers, la persistencia en Data y la vista Angular en presupuestos.html con
+su componente presupuestos.ts. Es una separación de responsabilidades entre backend y frontend.
+
+En esta versión se usa SQL Server por decisión del proyecto. Las consultas LINQ de Entity Framework
+Core y sus operaciones de persistencia parametrizan los valores, cumpliendo el propósito de seguridad
+de las consultas preparadas. PreparedStatement es una API de Java/JDBC y no forma parte de C#.
+Si la evaluación exige esa clase literalmente o persistencia en MySQL, es necesario confirmar con
+la docente la aceptación de SQL Server y el equivalente en .NET.
+
+Referencia técnica: https://learn.microsoft.com/en-us/ef/core/querying/how-query-works

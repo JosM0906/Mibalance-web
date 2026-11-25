@@ -13,10 +13,26 @@ public class MiBalanceContext : DbContext
     public DbSet<Categoria> Categorias => Set<Categoria>();
     public DbSet<Usuario> Usuarios => Set<Usuario>();
     public DbSet<Transaccion> Transacciones => Set<Transaccion>();
+    public DbSet<Presupuesto> Presupuestos => Set<Presupuesto>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<Presupuesto>()
+            .HasIndex(p => new { p.IdUsuario, p.IdCategoria, p.Mes })
+            .IsUnique()
+            .HasDatabaseName("UQ_Presupuestos_Usuario_Categoria_Mes");
+
+        modelBuilder.Entity<Presupuesto>()
+            .HasOne<Usuario>().WithMany().HasForeignKey(p => p.IdUsuario)
+            .OnDelete(DeleteBehavior.NoAction)
+            .HasConstraintName("FK_Presupuestos_Usuarios");
+
+        modelBuilder.Entity<Presupuesto>()
+            .HasOne<Categoria>().WithMany().HasForeignKey(p => p.IdCategoria)
+            .OnDelete(DeleteBehavior.NoAction)
+            .HasConstraintName("FK_Presupuestos_Categorias");
 
         modelBuilder.Entity<Categoria>()
             .HasIndex(c => c.Nombre)

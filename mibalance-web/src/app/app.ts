@@ -15,6 +15,7 @@ import { finalize } from 'rxjs';
           <a routerLink="/dashboard" routerLinkActive="activo">Resumen</a>
           <a routerLink="/transacciones" routerLinkActive="activo">Movimientos</a>
           <a routerLink="/categorias" routerLinkActive="activo">Categorías</a>
+          <a routerLink="/presupuestos" routerLinkActive="activo">Presupuestos</a>
         </nav>
         <div class="acciones">
           <span>{{ usuario.nombre }}</span>

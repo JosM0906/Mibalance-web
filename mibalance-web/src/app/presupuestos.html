@@ -1,0 +1,123 @@
+<p class="etiqueta">PLANIFICACIÓN MENSUAL</p>
+<h1>Presupuestos por categoría</h1>
+<p>Define un límite mensual por categoría. Cada presupuesto pertenece a tu cuenta.</p>
+
+@if (error()) {
+  <p class="error" role="alert">{{ error() }}</p>
+}
+@if (aviso()) {
+  <p class="exito" role="status">{{ aviso() }}</p>
+}
+@if (cargando()) {
+  <p role="status">Cargando presupuestos y categorías...</p>
+}
+
+@if (listo()) {
+  <div class="columnas">
+    <section class="panel">
+      <h2>{{ id === null ? 'Crear presupuesto' : 'Editar presupuesto' }}</h2>
+      <form #formulario="ngForm" (ngSubmit)="guardar()">
+        <label
+          >Nombre
+          <input
+            name="nombre"
+            [(ngModel)]="nombre"
+            required
+            maxlength="100"
+            placeholder="Ej. Alimentación del mes"
+          />
+        </label>
+        <label
+          >Categoría
+          <select name="categoria" [(ngModel)]="idCategoria" required>
+            <option [ngValue]="0" disabled>Selecciona una categoría</option>
+            @for (categoria of categorias(); track categoria.idCategoria) {
+              <option [ngValue]="categoria.idCategoria">{{ categoria.nombre }}</option>
+            }
+          </select>
+        </label>
+        @if (!categorias().length) {
+          <p>Primero <a routerLink="/categorias">crea una categoría</a>.</p>
+        }
+        <label
+          >Límite mensual
+          <input
+            name="limite"
+            type="number"
+            [(ngModel)]="montoLimite"
+            required
+            min="0.01"
+            max="9999999999.99"
+            step="0.01"
+          />
+        </label>
+        <label
+          >Mes
+          <input name="mes" type="month" [(ngModel)]="mes" required min="0001-01" max="9999-12" />
+        </label>
+        <button [disabled]="formulario.invalid || ocupado() || !nombre.trim() || idCategoria < 1">
+          {{ ocupado() ? 'Procesando...' : 'Guardar presupuesto' }}
+        </button>
+        @if (id !== null) {
+          <button type="button" class="secundario" (click)="limpiar()" [disabled]="ocupado()">
+            Cancelar edición
+          </button>
+        }
+      </form>
+    </section>
+    <section class="panel">
+      <div class="cabecera">
+        <h2>Mis presupuestos</h2>
+        <button class="secundario" (click)="cargar()" [disabled]="ocupado() || cargando()">
+          Actualizar
+        </button>
+      </div>
+      <div class="tabla">
+        <table>
+          <caption>
+            {{
+              presupuestos().length
+            }}
+            presupuestos registrados
+          </caption>
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Categoría</th>
+              <th>Mes</th>
+              <th>Límite</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (presupuesto of presupuestos(); track presupuesto.idPresupuesto) {
+              <tr>
+                <td>{{ presupuesto.nombre }}</td>
+                <td>{{ categoria(presupuesto.idCategoria) }}</td>
+                <td>{{ presupuesto.mes.slice(0, 7) }}</td>
+                <td>{{ presupuesto.montoLimite | number: '1.2-2' }}</td>
+                <td>
+                  <div class="acciones">
+                    <button class="secundario" (click)="editar(presupuesto)" [disabled]="ocupado()">
+                      Editar
+                    </button>
+                    <button class="peligro" (click)="eliminar(presupuesto)" [disabled]="ocupado()">
+                      Eliminar
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="5">Todavía no tienes presupuestos. Crea el primero.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+}
+@if (!cargando() && !listo()) {
+  <button class="secundario" (click)="cargar()">Reintentar carga</button>
+}

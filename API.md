@@ -33,3 +33,32 @@ El identificador de categoría debe existir. No se envía IdUsuario: se obtiene 
 Respuestas: 200 consulta exitosa, 201 creación, 204 edición/eliminación sin cuerpo,
 400 validación, 401 sin sesión o credenciales inválidas, 404 recurso no disponible,
 409 duplicado o restricción, 503 diagnóstico de conexión fallido.
+
+
+## Presupuestos
+
+Todas las rutas requieren sesión y restringen las operaciones al usuario autenticado.
+
+| Método | Ruta | Descripción |
+| --- | --- | --- |
+| GET | /api/presupuestos | Listar los presupuestos propios. |
+| GET | /api/presupuestos/{id} | Consultar un presupuesto propio. |
+| POST | /api/presupuestos | Crear presupuesto. |
+| PUT | /api/presupuestos/{id} | Editar presupuesto. |
+| DELETE | /api/presupuestos/{id} | Eliminar presupuesto. |
+
+Ejemplo de cuerpo para POST y PUT:
+
+```json
+{
+  "nombre": "Alimentación de noviembre",
+  "idCategoria": 1,
+  "montoLimite": 1500.00,
+  "mes": "2026-11-01"
+}
+```
+
+La categoría debe existir. La interfaz envía el primer día del mes seleccionado.
+El identificador del usuario procede de la sesión. Respuestas 400 para datos inválidos, 401 sin sesión,
+404 cuando el recurso no está disponible para ese usuario y 409 ante categoría/mes duplicados o
+referencias que ya no existen. Crear devuelve 201 y editar/eliminar devuelve 204.
